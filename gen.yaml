@@ -1,0 +1,27 @@
+configVersion: 2.0.0
+generation:
+  sdkClassName: VenariAI
+  maintainOpenAPIOrder: true
+  usageSnippets:
+    optionalPropertyRendering: withExample
+  fixes:
+    nameResolutionDec2023: false
+python:
+  version: 0.0.1
+  author: Venari
+  clientServerStatusCodesAsErrors: true
+  description: Venari AI SDK
+  flattenGlobalSecurity: true
+  imports:
+    option: openapi
+    paths:
+      callbacks: models/callbacks
+      errors: models/errors
+      operations: models/operations
+      shared: models/components
+      webhooks: models/webhooks
+  inputModelSuffix: input
+  installationUrl: https://github.com/Venari-Inc/venari-ai-python-sdk.git
+  maxMethodParams: 4
+  outputModelSuffix: output
+  packageName: venari-ai

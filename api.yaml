@@ -1,0 +1,925 @@
+openapi: 3.0.0
+info:
+  title: Venari AI Sneaker Inference API
+  version: 1.0.0
+  description: |-
+    The Venari AI Sneaker Inference API allows you to submit images, either as single requests or in batches, and receive inference results specifying which sneaker is present in the picture. The API also supports asynchronous requests using webhooks for improved flexibility and responsiveness.
+
+    ## Base URL
+
+    The base URL for accessing the Venari AI Sneaker Inference API is `https://api.venari.ai/`.
+
+    ## Authentication
+
+    To use the API, you need to include an API key in the request headers:
+
+    ```plaintext
+    X-Api-Key: YOUR_API_KEY
+    ```
+  termsOfService: https://venari.ai/terms
+  contact:
+    email: support@venari.ai
+servers:
+  - url: https://api.venari.ai
+tags:
+  - name: Inference
+security:
+  - ApiKey: []
+paths:
+  /v1/sneakers/id:
+    post:
+      summary: Single image ID.
+      tags:
+        - Inference
+      description: Identify one sneaker from a single image URL.
+      operationId: SneakerId
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SneakersIdRequest'
+      responses:
+        "200":
+          $ref: '#/components/responses/SneakersIdSuccess'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "403":
+          $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/InternalError'
+  /v1/sneakers/id/batch:
+    post:
+      summary: Images batch ID.
+      tags:
+        - Inference
+      description: Identify one sneaker from an array of image URLs.
+      operationId: SneakerIdBatch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SneakersIdBatchRequest'
+      responses:
+        "200":
+          $ref: '#/components/responses/SneakersIdBatchSuccess'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "403":
+          $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/InternalError'
+  /v1/sneakers/id/async:
+    post:
+      summary: Single image async ID
+      tags:
+        - Inference
+      description: Identify one sneaker from a single image URL and receive the response as a webhook to a provided URL.
+      operationId: SneakerIdAsync
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SneakersIdAsyncRequest'
+      responses:
+        "200":
+          $ref: '#/components/responses/AsyncSuccess'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "403":
+          $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/InternalError'
+  /v1/sneakers/id/batch/async:
+    post:
+      summary: Images batch async ID.
+      tags:
+        - Inference
+      description: Identify one sneaker from an array of image URLs and receive the response as a webhook to a provided URL.
+      operationId: SneakerIdBatchAsync
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SneakersIdBatchAsyncRequest'
+      responses:
+        "200":
+          $ref: '#/components/responses/AsyncSuccess'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "403":
+          $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/InternalError'
+  /v1/sneakers/product_data/{product_id}:
+    get:
+      summary: Search catalog product by ID.
+      tags:
+        - Search
+      description: Search product details by internal product uuid.
+      operationId: ProductData
+      parameters:
+        - name: product_id
+          in: path
+          description: The internal product id.
+          required: true
+          schema:
+            type: string
+            example: "26d17f72-44e8-467a-8931-8867e11075a4"
+        - name: inference_id
+          in: query
+          description: The inference id.
+          required: false
+          schema:
+            type: string
+            example: "491a66ec-6cf6-4fb7-a02c-7e4caa3d1942"
+      responses:
+        "200":
+          $ref: '#/components/responses/ProductData'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "403":
+          $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/InternalError'
+  /v1/sneakers/search/catalog:
+    get:
+      summary: Catalog text search.
+      tags:
+        - Search
+      description: Search product details by text query.
+      operationId: CatalogSearch
+      parameters:
+        - name: query
+          in: query
+          description: The text query.
+          required: true
+          schema:
+            type: string
+            example: "red air jordan"
+        - name: limit
+          in: query
+          description: The maximum number of results to return.
+          required: false
+          schema:
+            type: number
+            example: 10
+            default: 20
+      responses:
+        "200":
+          $ref: '#/components/responses/SearchResults'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "403":
+          $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/InternalError'
+  /v1/catalog/search/similar_by_item:
+    post:
+      summary: Similarity search by item.
+      tags:
+        - Search
+      operationId: SimilarByItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimilarItemPayload'
+      responses:
+        "200":
+          $ref: '#/components/responses/SearchSimilarByItemResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "403":
+          $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/InternalError'
+  /v1/catalog/item:
+    put:
+      summary: Updates a catalog item status.
+      tags:
+        - Catalog
+      operationId: CatalogItemUpdate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                external_id:
+                  type: string
+                  description: The internal product id.
+                  example: "491a66ec-6cf6-4fb7-a02c-7e4caa3d1942"
+                  pattern: '^[a-zA-Z0-9-_@+:;<>.?!#*()]{1,60}$'
+                status:
+                  type: string
+                  description: The status of the item.
+                  enum:
+                    - active
+                    - inactive
+                    - deleted
+                  example: active
+      responses:
+        "200":
+          description: 'Successfully updated catalog item'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: The status of the the operation.
+                    example: 'success'
+                    enum:
+                      - success
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "403":
+          $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/InternalError'
+    post:
+      summary: Adds an item to the catalog database.
+      tags:
+        - Catalog
+      operationId: CatalogItemAdd
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CatalogItem'
+      responses:
+        "200":
+          description: 'Successfully added item to catalog'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: The status of the the operation.
+                    example: 'success'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "403":
+          $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/InternalError'
+
+components:
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+      x-speakeasy-example: YOUR_API_KEY
+  schemas:
+    Url:
+      type: string
+      description: The sneaker's image URL.
+      example: "https://www.shutterstock.com/shutterstock/photos/647477452/display_1500/stock-photo-urban-teenager-legs-silhouette-wearing-sneakers-647477452.jpg"
+    Confidence:
+      type: number
+      description: The inference confidence value.
+      example: 85.32
+    PostbackUrl:
+      type: string
+      description: The URL to which the webhook will be delivered once the identification process is completed.
+      example: https://my-postback-url.com/product/123456
+    ListingId:
+      type: string
+      description: The sneaker's listing id to be asociated with the array of images.
+      example: cool-sneaker-abc-123
+    Urls:
+      type: array
+      items:
+        type: string
+      description: The sneaker's array of image URLs. Specify a maximum of 32 urls.
+      example:
+        - "https://www.shutterstock.com/shutterstock/photos/647477452/display_1500/stock-photo-urban-teenager-legs-silhouette-wearing-sneakers-647477452.jpg"
+        - "https://www.shutterstock.com/shutterstock/photos/647477452/display_1500/stock-photo-urban-teenager-legs-silhouette-wearing-sneakers-647477452.jpg"
+    CustomData:
+      type: object
+      additionalProperties: true
+      description: User-defined flat object to be returned in the response.
+      example:
+        myCustomProp: "Hello!"
+        myCustomValue: 10
+    ConfidenceThreshold:
+      type: number
+      description: The confidence threshold value.
+      minimum: 0
+      maximum: 50
+      example: 25
+    RestrictiveMode:
+      type: boolean
+      description: A boolean flag for restrictive mode.
+      default: false
+      example: false
+    Variants:
+      type: boolean
+      description: Whether to include sneaker variants.
+      default: false
+      example: false
+    MetaData:
+      type: object
+      properties:
+        inference_id:
+          type: string
+          example: "491a66ec-6cf6-4fb7-a02c-7e4caa3d1942"
+      additionalProperties: false
+    CatalogItem:
+      type: object
+      properties:
+        external_id:
+          type: string
+          pattern: '^[a-zA-Z0-9-_@+:;<>.?!#*()]{1,60}$'
+          example: "8574528356656"
+        title:
+          type: string
+          example: "1017 ALYX 9SM City Scape Tee - Black"
+        product_type:
+          type: string
+          example: "T-Shirt"
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+            - deleted
+          example: "active"
+        mpn:
+          type: string
+          nullable: true
+          example: "mpn-123"
+        brand:
+          type: string
+          nullable: true
+          example: "Nike"
+        category:
+          type: array
+          items:
+            type: string
+          example:
+            - "Apparel"
+            - "Men's"
+            - "T-Shirts"
+        description:
+          type: string
+          nullable: true
+          example: "This is a sample description."
+        product_url:
+          type: string
+          example: "https://test.com/product/8574528356656"
+        tags:
+          type: array
+          items:
+            type: string
+          nullable: true
+          example:
+            - "1017-alyx-9sm"
+            - "8818"
+            - "aamts0018a001-1-bl"
+            - "mens"
+            - "tee shirt"
+            - "tees"
+            - "tops"
+        images:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+                example: "https://cdn.shopify.com/s/files/1/0814/9627/7296/products/AAMTS0018A001-1-BL-4.jpg?v=1692374837"
+              alt_text:
+                type: string
+                nullable: true
+                example: "1017 ALYX 9SM City Scape Tee - Black"
+              width:
+                type: integer
+                nullable: true
+                example: 2000
+              height:
+                type: integer
+                nullable: true
+                example: 2000
+            required:
+              - url
+        variants:
+          type: array
+          items:
+            type: object
+            properties:
+              sku:
+                type: string
+                example: "98149972"
+              title:
+                type: string
+                nullable: true
+                example: "XS"
+              price:
+                type: number
+                example: 205.00
+              compare_at_price:
+                type: number
+                nullable: true
+                example: 205.00
+              product_code:
+                type: object
+                properties:
+                  type:
+                    enum:
+                      - barcode
+                      - gtin
+                      - ean
+                    example: "barcode"
+                  value:
+                    type: string
+                    example: "9893567872"
+                nullable: true
+              position:
+                type: number
+                nullable: true
+                example: 1
+              inventory_quantity:
+                type: number
+                nullable: true
+                example: 10
+              size:
+                type: string
+                nullable: true
+                example: "XL"
+            required:
+              - sku
+              - price
+      required:
+        - external_id
+        - title
+        - product_type
+        - status
+        - product_url
+        - images
+        - variants
+    Product:
+      type: object
+      properties:
+        product_id:
+          type: number
+          example: 353216
+        style_id:
+          type: string
+          example: "GX5511"
+        product_title:
+          type: string
+          example: "SolarGlide 5 'Black Grey'"
+        brand_name:
+          type: string
+          example: "adidas"
+        silhouette:
+          type: string
+          nullable: true
+          example: "SolarGlide"
+        gender:
+          type: string
+          example: "Female"
+        age_group:
+          type: string
+          example: "adult"
+        shaft_style:
+          type: string
+          nullable: true
+          example: null
+        upper_material:
+          type: string
+          nullable: true
+          example: "Mesh"
+        release_date:
+          type: string
+          nullable: true
+          example: "2022-03-08T23:59:59.999Z"
+        colorway:
+          type: string
+          nullable: true
+          example: "Core Black/Cloud White/Grey Six"
+        designer:
+          type: string
+          nullable: true
+          example: null
+        cat1:
+          type: string
+          example: "Sneakers"
+        cat2:
+          type: string
+          nullable: true
+          example: "adidas"
+        cat3:
+          type: string
+          nullable: true
+          example: "other"
+        cat4:
+          type: string
+          nullable: true
+          example: "SolarGlide"
+        color_weights:
+          type: array
+          items:
+            type: object
+            properties:
+              color_name:
+                type: string
+              weight:
+                type: number
+            required:
+              - color_name
+              - weight
+          example:
+            - color_name: "black"
+              weight: 0.5186
+            - color_name: "white"
+              weight: 0.3459
+            - color_name: "grey"
+              weight: 0.1172
+        upcs:
+          type: array
+          items:
+            type: object
+            properties:
+              size:
+                type: number
+              upc:
+                type: string
+            required:
+              - size
+              - upc
+          example:
+            - upc: "4065419817362"
+              size: 7
+        image:
+          type: string
+          example: "https://d1fkelqwbrkmzu.cloudfront.net/detail/@2x/06f2f7bb-e77b-42a3-84f9-5f09c870ce7e.jpeg"
+      additionalProperties: false
+      required:
+        - product_id
+        - style_id
+        - product_title
+        - brand_name
+        - gender
+        - age_group
+        - cat1
+        - color_weights
+        - upcs
+        - image
+    ProductWithUUID:
+      allOf:
+        - $ref: '#/components/schemas/Product'
+        - type: object
+          properties:
+            id:
+              type: string
+              example: "491a66ec-6cf6-4fb7-a02c-7e4caa3d1942"
+          required:
+            - id
+          additionalProperties: false
+    SearchResult:
+      type: object
+      properties:
+        id:
+          type: string
+        style_id:
+          type: string
+        product_title:
+          type: string
+        brand_name:
+          type: string
+        age_group:
+          type: string
+          nullable: true
+        release_year:
+          type: number
+          nullable: true
+          example: 2020
+        image:
+          type: string
+      required:
+        - id
+        - style_id
+        - product_title
+        - brand_name
+        - image
+      additionalProperties: false
+    SimilarItemPayload:
+      description: Payload for similar item search.
+      type: object
+      properties:
+        external_id:
+          type: string
+          description: The external id of the item to search for.
+          example: "26d17f72-44e8-467a-8931-8867e11075a4"
+        min_score:
+          type: number
+          description: The minimum score of the results to return.
+          nullable: true
+          minimum: 0
+          maximum: 1
+          example: 0.5
+# todo pending sql function implementation
+#        return_extended_items:
+#          nullable: true
+#          type: boolean
+      required:
+        - external_id
+      additionalProperties: false
+    BasicSimilarSearchResult:
+      type: object
+      properties:
+        rank:
+          type: number
+          example: 2
+        brand:
+          type: string
+          nullable: true
+          example: "Nike"
+        image:
+          type: string
+          nullable: true
+          example: "https://cdn.shopify.com/s/files/1/0814/9627/7296/products/AAMTS0018A001-1-BL-4.jpg?v=1692374837"
+        price:
+          type: number
+          example: 196
+        title:
+          type: string
+          example: "1017 ALYX 9SM City Scape Tee - Black"
+        status:
+          type: string
+          example: "active"
+        external_id:
+          type: string
+          example: "8574528356656"
+        product_url:
+          type: string
+          nullable: true
+          example: "https://test.com/product/8574528356656"
+        product_type:
+          type: string
+          example: "T-Shirt"
+      required:
+        - rank
+        - image
+        - price
+        - title
+        - status
+        - external_id
+        - product_type
+    AdditionalSimilarSearchResultsInfo:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "018c2147-9f6b-7557-98b9-73a014113fe5"
+        score:
+          type: number
+          nullable: true
+          example: 0.6
+        alt_text:
+          type: string
+          nullable: true
+          example: "1017 ALYX 9SM City Scape Tee - Black"
+      required:
+        - id
+    BasicSearchSimilarByItemResults:
+      type: object
+      properties:
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/BasicSimilarSearchResult'
+      required:
+        - products
+    SearchSimilarByItemResults:
+      type: object
+      properties:
+        products:
+          type: object
+          properties:
+            results:
+              type: number
+            products:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/BasicSimilarSearchResult'
+                  - $ref: '#/components/schemas/AdditionalSimilarSearchResultsInfo'
+          required:
+            - products
+            - results
+      required:
+        - products
+    VariantProducts:
+      type: array
+      items:
+        $ref: '#/components/schemas/Product'
+    AsyncResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "1e07b269-b129-497b-bccc-b6781b483039"
+        internal_id:
+          type: string
+          example: "54987fd6-5a77-4579-8e0d-c3bdd62845aa"
+      required:
+        - id
+        - internal_id
+      additionalProperties: false
+    BaseSneakerId:
+      type: object
+      properties:
+        custom:
+          $ref: '#/components/schemas/CustomData'
+        confidence_threshold:
+          $ref: '#/components/schemas/ConfidenceThreshold'
+        restrictive_mode:
+          $ref: '#/components/schemas/RestrictiveMode'
+      additionalProperties: false
+    SneakersIdRequest:
+      allOf:
+        - $ref: '#/components/schemas/BaseSneakerId'
+        - type: object
+          properties:
+            url:
+              $ref: '#/components/schemas/Url'
+            variants:
+              $ref: '#/components/schemas/Variants'
+          required:
+            - url
+          additionalProperties: false
+    SneakersIdBatchRequest:
+      allOf:
+        - $ref: '#/components/schemas/BaseSneakerId'
+        - type: object
+          properties:
+            urls:
+              $ref: '#/components/schemas/Urls'
+            listing_id:
+              $ref: '#/components/schemas/ListingId'
+            variants:
+              $ref: '#/components/schemas/Variants'
+          required:
+            - urls
+            - listing_id
+          additionalProperties: false
+    SneakersIdAsyncRequest:
+      allOf:
+        - $ref: '#/components/schemas/BaseSneakerId'
+        - type: object
+          properties:
+            url:
+              $ref: '#/components/schemas/Url'
+            postback_url:
+              $ref: '#/components/schemas/PostbackUrl'
+          required:
+            - url
+            - postback_url
+          additionalProperties: false
+    SneakersIdBatchAsyncRequest:
+      allOf:
+        - $ref: '#/components/schemas/BaseSneakerId'
+        - type: object
+          properties:
+            postback_url:
+              $ref: '#/components/schemas/PostbackUrl'
+            urls:
+              $ref: '#/components/schemas/Urls'
+            listing_id:
+              $ref: '#/components/schemas/ListingId'
+          required:
+            - postback_url
+            - urls
+            - listing_id
+          additionalProperties: false
+  responses:
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: string
+          example:
+            error: Server error
+            code: VNAI_SERVER_ERROR
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: string
+          example:
+            error: Bad request
+            code: VNAI_BAD_REQUEST
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: string
+          example:
+            error: Unauthorized
+            code: VNAI_UNAUTHORIZED
+    ProductData:
+      description: Product data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProductWithUUID'
+    SearchSimilarByItemResponse:
+      description: Similar items search by item.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SearchSimilarByItemResults'
+#            oneOf: (see todo)
+#              - $ref: '#/components/schemas/BasicSearchSimilarByItemResults'
+    SearchResults:
+      description: Search results
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/SearchResult'
+    SneakersIdSuccess:
+      description: 'Successful processing of image URL'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              product:
+                $ref: '#/components/schemas/Product'
+              custom:
+                $ref: '#/components/schemas/CustomData'
+              variants:
+                $ref: '#/components/schemas/VariantProducts'
+              confidence:
+                $ref: '#/components/schemas/Confidence'
+              meta:
+                $ref: '#/components/schemas/MetaData'
+            required:
+              - product
+              - confidence
+              - meta
+            additionalProperties: false
+    SneakersIdBatchSuccess:
+      description: 'Successful processing of batch of image URLs'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              product:
+                $ref: '#/components/schemas/Product'
+              custom:
+                $ref: '#/components/schemas/CustomData'
+              variants:
+                $ref: '#/components/schemas/VariantProducts'
+              confidence:
+                $ref: '#/components/schemas/Confidence'
+              meta:
+                $ref: '#/components/schemas/MetaData'
+            required:
+              - product
+              - confidence
+              - meta
+            additionalProperties: false
+    AsyncSuccess:
+      description: 'Successfully queued inference'
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/AsyncResponse'
+            additionalProperties: false
